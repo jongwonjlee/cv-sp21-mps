@@ -26,8 +26,9 @@
 
         PDF file should be submitted to
         [Gradescope](https://www.gradescope.com) under `MP0`. Course code is
-        **3YR7GY**. Please tag your PDF with where your response to each of the
-        question is. 
+        **3YR7GY**. Please tag the reponses in your PDF with the Gradescope
+        questions outline  as described in
+        [Submitting an Assignment](https://youtu.be/u-pK4GzpId0). 
 
     2.  You also need to submit code for Q3 in the form of a single
         `.zip` file that includes all your code, all in the same
@@ -38,8 +39,9 @@
         100% of the points on Q3.*
 
     3.  We reserve the right to take off points for not following
-        submission instructions. In particular, please tag your PDF with where
-        your response to each of the question is.
+        submission instructions. In particular, please tag the reponses
+        in your PDF with the Gradescope questions outline as described
+        in [Submitting an Assignment](https://youtu.be/u-pK4GzpId0). 
 
 4.  Lastly, be careful not to work of a public fork of this repo. Make a
     private clone to work on your assignment. You are responsible for
