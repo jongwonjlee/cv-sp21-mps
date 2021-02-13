@@ -1,5 +1,10 @@
 # user-defined
 git_usage.md
+/*.png
+/*.pdf
+
+# jupyter notebook
+*.ipynb
 
 # vscode
 .vscode/

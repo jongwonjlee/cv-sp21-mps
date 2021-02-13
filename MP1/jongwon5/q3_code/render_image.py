@@ -19,15 +19,61 @@ def render(Z, N, A, S,
   cx, cy = w / 2, h /2
   f = 128.
 
+  # Input direction
+  vi_p = np.empty((h, w, 3))
+  vi_d = np.empty((h, w, 3))
+  # Reflective direction
+  si_p = np.empty((h, w, 3))
+  si_d = np.empty((h, w, 3))
+  # Output direction
+  vr = np.empty((h, w, 3))
+
+  # Fill data
+  for v in range(h):
+    for u in range(w):
+      depth = Z[v, u]           # depth to the object from camera center
+      X = depth / f * (u - cx)  # X coordinate of the object w.r.t. the camera center
+      Y = depth / f * (v - cy)  # Y coordinate of the object w.r.t. the camera center
+      
+      # incident light direction
+      vi_p[v, u, :] = np.array([X - point_light_loc[0][0], Y - point_light_loc[0][1], depth - point_light_loc[0][2]])
+      vi_d[v, u, :] = np.array(directional_light_dirn[0])
+      # specular reflection direction (see Section 2.2, Equation 2.89 in Szeliski)
+      # FIXME: which one is correct?
+      # si_p[v, u, :] = np.matmul(2 * N[v, u, :] * N[v, u, :].T - np.eye(3), vi_p[v, u, :])
+      # si_d[v, u, :] = np.matmul(2 * N[v, u, :] * N[v, u, :].T - np.eye(3), vi_d[v, u, :])
+      si_p[v, u, :] = vi_p[v, u, :] - 2 * np.dot(vi_p[v, u, :], N[v, u, :]) * N[v, u, :]
+      si_d[v, u, :] = vi_d[v, u, :] - 2 * np.dot(vi_d[v, u, :], N[v, u, :]) * N[v, u, :]
+      # viewing direction
+      vr[v, u, :] = np.array([X, Y, depth])
+  
+  # Normalize above
+  vi_p /= np.linalg.norm(vi_p, axis=2)[:, :, np.newaxis]
+  vi_d /= np.linalg.norm(vi_d, axis=2)[:, :, np.newaxis]
+  si_p /= np.linalg.norm(si_p, axis=2)[:, :, np.newaxis]
+  si_d /= np.linalg.norm(si_d, axis=2)[:, :, np.newaxis]
+  vr /= np.linalg.norm(vr, axis=2)[:, :, np.newaxis]
 
   # Ambient Term
-  I = A * ambient_light
+  Ia = A * ambient_light
   
   # Diffuse Term
-
+  point_light_strength = point_light_strength[0]
+  directional_light_strength = directional_light_strength[0]
+  
+  Id_p = A * point_light_strength * np.clip(np.einsum('ijk,ijk->ij', vi_p, N), 0, None)
+  Id_d = A * directional_light_strength * np.clip(np.einsum('ijk,ijk->ij', vi_d, N), 0, None)
+  
   # Specular Term
+  # FIXME: wether clip or not?
+  Is_p = S * point_light_strength * pow(np.clip(np.einsum('ijk,ijk->ij', vr, si_p), 0, None), k_e)
+  Is_d = S * directional_light_strength * pow(np.clip(np.einsum('ijk,ijk->ij', vr, si_d), 0, None), k_e)
 
-  I = np.minimum(I, 1)*255
+  # Sum up terms above
+  I = Ia + Id_p + Id_d + Is_p + Is_d
+
+  # Prepare for output
+  I = np.minimum(I, 1) * 255
   I = I.astype(np.uint8)
   I = np.repeat(I[:,:,np.newaxis], 3, axis=2)
   return I
