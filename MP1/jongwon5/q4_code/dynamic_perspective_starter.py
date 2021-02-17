@@ -43,6 +43,9 @@ def create_optical_flow(Z, fx, fy, cx, cy, szx, szy, t, w, eps=.001):
     param t: translational velocity (list or np array with (3,))
     param w: rotational velocity (list or np array with (3,))
     """
+    assert(fx == fy)
+    f = fx
+
     # Cast t and w to be column vectors
     if type(t) == list or t.shape != (3, 1):
         t = np.array(t)[:, np.newaxis]
@@ -56,15 +59,15 @@ def create_optical_flow(Z, fx, fy, cx, cy, szx, szy, t, w, eps=.001):
     for y in range(szy):
         for x in range(szx):
             depth = Z[y, x]           # depth to the object from camera center
-            X = depth / fx * (x - cx)  # X coordinate of the object w.r.t. the camera center
-            Y = depth / fy * (y - cy)  # Y coordinate of the object w.r.t. the camera center
+            X = depth / f * (x - cx)  # X coordinate of the object w.r.t. the camera center
+            Y = depth / f * (y - cy)  # Y coordinate of the object w.r.t. the camera center
             
             # Compute optical flow
-            T = np.array([[-1, 0, X], 
-                        [0, -1, Y]])
-            R = np.array([[X*Y, -(1+X**2),  Y],
-                        [(1+Y**2), -X*Y, -X]])
-            of = T @ t / (depth + eps) + R @ w
+            T = np.array([[-f, 0, X], 
+                          [0, -f, Y]])
+            R = np.array([[X*Y, -(X**2+f**2),  Y],
+                          [(Y**2+f**2), -X*Y, -X]])
+            of = T @ t / (depth + eps) + R @ w / f
             u[y, x] = of[0]
             v[y, x] = of[1]
         
