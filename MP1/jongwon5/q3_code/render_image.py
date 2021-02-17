@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from generate_scene import get_ball
 import matplotlib.pyplot as plt
@@ -35,19 +36,18 @@ def render(Z, N, A, S,
       X = depth / f * (u - cx)  # X coordinate of the object w.r.t. the camera center
       Y = depth / f * (v - cy)  # Y coordinate of the object w.r.t. the camera center
       
+      ## All directional conventions below adhere to that of Fig.2.15. in Szeliski
+      ## https://www.dropbox.com/s/vdohbj8i4xq838s/SzeliskiBookDraft_20210214.pdf?dl=0
       # incident light direction
-      vi_p[v, u, :] = np.array([X - point_light_loc[0][0], Y - point_light_loc[0][1], depth - point_light_loc[0][2]])
-      vi_d[v, u, :] = np.array(directional_light_dirn[0])
-      # specular reflection direction (see Section 2.2, Equation 2.89 in Szeliski)
-      # FIXME: which one is correct?
-      # si_p[v, u, :] = np.matmul(2 * N[v, u, :] * N[v, u, :].T - np.eye(3), vi_p[v, u, :])
-      # si_d[v, u, :] = np.matmul(2 * N[v, u, :] * N[v, u, :].T - np.eye(3), vi_d[v, u, :])
-      si_p[v, u, :] = vi_p[v, u, :] - 2 * np.dot(vi_p[v, u, :], N[v, u, :]) * N[v, u, :]
-      si_d[v, u, :] = vi_d[v, u, :] - 2 * np.dot(vi_d[v, u, :], N[v, u, :]) * N[v, u, :]
+      vi_p[v, u, :] = - np.array([X - point_light_loc[0][0], Y - point_light_loc[0][1], depth - point_light_loc[0][2]])
+      vi_d[v, u, :] = - np.array(directional_light_dirn[0])
+      # specular reflection direction (see Section 2.2., Equation 2.90. in Szeliski)
+      si_p[v, u, :] = np.matmul(2 * N[v, u, :] * N[v, u, :][:, np.newaxis] - np.eye(3), vi_p[v, u, :])
+      si_d[v, u, :] = np.matmul(2 * N[v, u, :] * N[v, u, :][:, np.newaxis] - np.eye(3), vi_d[v, u, :])
       # viewing direction
-      vr[v, u, :] = np.array([X, Y, depth])
+      vr[v, u, :] = - np.array([X, Y, depth])
   
-  # Normalize above
+  # Normalize directional vectors
   vi_p /= np.linalg.norm(vi_p, axis=2)[:, :, np.newaxis]
   vi_d /= np.linalg.norm(vi_d, axis=2)[:, :, np.newaxis]
   si_p /= np.linalg.norm(si_p, axis=2)[:, :, np.newaxis]
@@ -65,7 +65,6 @@ def render(Z, N, A, S,
   Id_d = A * directional_light_strength * np.clip(np.einsum('ijk,ijk->ij', vi_d, N), 0, None)
   
   # Specular Term
-  # FIXME: wether clip or not?
   Is_p = S * point_light_strength * pow(np.clip(np.einsum('ijk,ijk->ij', vr, si_p), 0, None), k_e)
   Is_d = S * directional_light_strength * pow(np.clip(np.einsum('ijk,ijk->ij', vr, si_d), 0, None), k_e)
 
@@ -79,6 +78,9 @@ def render(Z, N, A, S,
   return I
 
 def main():
+  # Current code directory
+  current_dir = os.path.dirname(os.path.abspath(__file__))
+
   for specular in [True, False]:
     # get_ball function returns:
     # - Z (depth image: distance to scene point from camera center, along the
@@ -117,7 +119,7 @@ def main():
       ax = axes.pop()
       ax.imshow(I)
       ax.set_axis_off()
-    plt.savefig(f'specular{specular:d}_move_point.png', bbox_inches='tight')
+    plt.savefig(os.path.join(current_dir, f'specular{specular:d}_move_point.png'), bbox_inches='tight')
     plt.close()
 
     # Case II: No point source, just a directional light source that moves
@@ -138,7 +140,7 @@ def main():
       ax = axes.pop()
       ax.imshow(I)
       ax.set_axis_off()
-    plt.savefig(f'specular{specular:d}_move_direction.png', bbox_inches='tight')
+    plt.savefig(os.path.join(current_dir, f'specular{specular:d}_move_direction.png', bbox_inches='tight')
     plt.close()
 
 if __name__ == '__main__':
