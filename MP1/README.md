@@ -51,6 +51,8 @@
     -r requirements.txt` to install required packages.
 
 ### Change log
+* v3 02/18/2021 Fix `q3_code/render_image.py` comments on coordinate directions.
+
 * v2 02/16/2021 Add missing $`\max`$ with $`0`$ for specular term in Q3 $`I(x)`$ equation.
 
 * v1 02/15/2021 Add missing $`+`$ sign in Q3 $`I(x)`$ equation.
