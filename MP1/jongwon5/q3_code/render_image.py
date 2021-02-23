@@ -40,7 +40,7 @@ def render(Z, N, A, S,
       ## https://www.dropbox.com/s/vdohbj8i4xq838s/SzeliskiBookDraft_20210214.pdf?dl=0
       # incident light direction
       vi_p[v, u, :] = - np.array([X - point_light_loc[0][0], Y - point_light_loc[0][1], depth - point_light_loc[0][2]])
-      vi_d[v, u, :] = - np.array(directional_light_dirn[0])
+      vi_d[v, u, :] = np.array(directional_light_dirn[0])
       # specular reflection direction (see Section 2.2., Equation 2.90. in Szeliski)
       si_p[v, u, :] = np.matmul(2 * N[v, u, :] * N[v, u, :][:, np.newaxis] - np.eye(3), vi_p[v, u, :])
       si_d[v, u, :] = np.matmul(2 * N[v, u, :] * N[v, u, :][:, np.newaxis] - np.eye(3), vi_d[v, u, :])
@@ -140,7 +140,7 @@ def main():
       ax = axes.pop()
       ax.imshow(I)
       ax.set_axis_off()
-    plt.savefig(os.path.join(current_dir, f'specular{specular:d}_move_direction.png', bbox_inches='tight')
+    plt.savefig(os.path.join(current_dir, f'specular{specular:d}_move_direction.png'), bbox_inches='tight')
     plt.close()
 
 if __name__ == '__main__':
