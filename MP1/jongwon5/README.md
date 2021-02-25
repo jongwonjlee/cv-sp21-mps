@@ -3,7 +3,8 @@
 ## Preliminary
 - The following code has been tested in Python 3.7.9, with packages of `numpy=1.19.1` and `matplotlib=3.3.1`.
 - All implementations and results can be found in the directory [q3_code/](q3_code/).
-- All conventions, especially the direction of vectors in Phong Shading Model, ahere to that in Szeliski. For better clarification, I attach the image from TA, which apparently shows the relationship between the direction of incident light ($\hat{v}_{i}$) and reflected light ($\hat{s}_{i}$), which is parameterized by the normal of the surface ($\hat{n}$). In addition, the viewing direction is depicted as well ($\hat{v}_{r}$). Note that all directional vectors should be normalized before any operation.
+- All conventions, especially the direction of vectors in Phong Shading Model, ahere to that in Szeliski. For better clarification, I attach the image from TA, which apparently shows the relationship between the direction of incident light $\hat{v}_{i}$ and reflected light $\hat{s}_{i}$, which is parameterized by the normal of the surface $\hat{n}$. In addition, the viewing direction $\hat{v}_{r}$ is described as well. Note that all directional vectors should be normalized before any operation.
+
 <div align="center">
 <img src="q3_vector_convention.png" width="70%">
 </div>
@@ -54,7 +55,7 @@ Considering that the point light source in the case 2 and 4 is located behind th
 ## How does it work?
 The key issue in implementing Phong's model is how to take into account three different directional vectors. In this code, all the directional convention obeys Fig.2.15. in Szeliski. 
 
-Here, I attach the code that fills in the array of incident light ($\hat{v}_{i}$), reflected light ($\hat{s}_{i}$), and ($\hat{v}_{r}$), which depend on the object's 3D location that we are looking at in the camera coordinate $(X, Y, depth)$ as well as the normal of the surface ($\hat{n}$), each of which corresponds to the 2d pixel's coordinate $(u, v)$ in the image frame we are looking into. 
+Here, I attach the code that fills in the array of incident light $\hat{v}_{i}$, reflected light $\hat{s}_{i}$, and $\hat{v}_{r}$, which depend on the object's 3D location that we are looking at in the camera coordinate $(X, Y, depth)$ as well as the normal of the surface $\hat{n}$, each of which corresponds to the 2d pixel's coordinate $(u, v)$ in the image frame we are looking into. 
 
 ```
 for v in range(h):
@@ -73,7 +74,7 @@ for v in range(h):
     vr[v, u, :] = - np.array([X, Y, depth])
 ```
 
-At first, each 2D pixel coordinate $(u, v)$ should be converted into the 3D camera coordinate $(X, Y, depth)$, which is parametrized by the focal length ($f$) and camera center $(c_{x}, c_{y})$ as well. After than, incident light vector ($\hat{v}_{i}$) for every pixel can be estimated as all pixels' location in 3D camera coordinate has been decided in the prior step. Note that the incident light's direction for both the point light source ($\left(\hat{v}_{i}\right)_{p}$) and the directional light ($\left(\hat{v}_{i}\right)_{d}$) needs to be calculated respectively as both of them are in our consideration. Regarding that $\left(\hat{v}_{i}\right)_{p}$ is defined as *the direction from the incidental surface to the light source*, a minus sign has been appended for *the direction from the light source to the incidental surface*. Once both $\left(\hat{v}_{i}\right)_{p}$ and $\left(\hat{v}_{i}\right)_{d}$ has been calculated, we can estimate reflective light vector ($\hat{s}_{i}$). Since $\hat{s}_{i}$ depends on $\hat{v}_{i}$, $\hat{s}_{i}$ for $\left(\hat{v}_{i}\right)_{p}$ and $\left(\hat{v}_{i}\right)_{d}$ should be calculated respectively as well. Using the Equation 2.90. in Szeliski ($\hat{s}_{i} = \left(2\hat{n}\hat{n}^{T} - I_{3\times3}\right)\hat{v}_{i}$), the reflective direction for both point light source ($\left(\hat{s}_{i}\right)_{p}$) and directional light ($\left(\hat{s}_{i}\right)_{d}$) are obtained. Lastly, the viewing direction ($\hat{v}_{r}$), *the direction from the reflected surface to the observer*, are estimated.
+At first, each 2D pixel coordinate $(u, v)$ should be converted into the 3D camera coordinate $(X, Y, depth)$, which is parametrized by the focal length $f$ and camera center $(c_{x}, c_{y})$ as well. After than, incident light vector $\hat{v}_{i}$ for every pixel can be estimated as all pixels' location in 3D camera coordinate has been decided in the prior step. Note that the incident light's direction for both the point light source $\left(\hat{v}_{i}\right)_{p}$ and the directional light $\left(\hat{v}_{i}\right)_{d}$ needs to be calculated respectively as both of them are in our consideration. Regarding that $\left(\hat{v}_{i}\right)_{p}$ is defined as *the direction from the incidental surface to the light source*, a minus sign has been appended for *the direction from the light source to the incidental surface*. Once both $\left(\hat{v}_{i}\right)_{p}$ and $\left(\hat{v}_{i}\right)_{d}$ has been calculated, we can estimate reflective light vector $\hat{s}_{i}$. Since $\hat{s}_{i}$ depends on $\hat{v}_{i}$, $\hat{s}_{i}$ for $\left(\hat{v}_{i}\right)_{p}$ and $\left(\hat{v}_{i}\right)_{d}$ should be calculated respectively as well. Using the Equation 2.90. in Szeliski $\hat{s}_{i} = \left(2\hat{n}\hat{n}^{T} - I_{3\times3}\right)\hat{v}_{i}$, the reflective direction for both point light source $\left(\hat{s}_{i}\right)_{p}$ and directional light $\left(\hat{s}_{i}\right)_{d}$ are obtained. Lastly, the viewing direction $\hat{v}_{r}$, *the direction from the reflected surface to the observer*, are estimated.
 
 Keep in mind that all of these directional vectors should be normalized not to occur any problem while we sum up all light intensity terms in Phong's model. If not, it may cause the overflow and the outcome image will be saturated.
 
@@ -178,3 +179,6 @@ Please refer to the attached appendices. The outcomes align with our intuition.
 - As the camera is moving into the image's bottom-right side, we perceive the optical flow originated from bottom-right as well as coming toward the camera.
 5. `wall`, $\omega_{y} > 1$
 - Since the camera is counterclockwise around y-axis, which towards downward, we perceive the optical flow heading toward left.
+
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config"> MathJax.Hub.Config({ tex2jax: {inlineMath: [['$', '$']]}, messageStyle: "none" });</script>
