@@ -13,7 +13,7 @@
     2. You should respond to the questions individually and include images as necessary. Your response in the PDF report should be self-contained. It should include all the output you want us to look at. You will not receive credit for any results you have obtained, but failed to include directly in the PDF report file. PDF file should be submitted to [Gradescope](https://www.gradescope.com) under `MP2`. Course code is **3YR7GY**. Please tag the reponses in your PDF with the Gradescope questions outline as described in [Submitting an Assignment](https://youtu.be/u-pK4GzpId0).  
 
     3.  In this assignment we are using **gradescope autograder** for the testing your code. For this to work, you will need to submit the code according to the following instructions:
-        - Code should be submitted to [Gradescope](https://www.gradescope.com) under `MP2-code`, you will need to submit three *python* files for the three assignment questions: `corner_solve.py`, `corner_solve.py`, and `blend_solve.py`.
+        - Code should be submitted to [Gradescope](https://www.gradescope.com) under `MP2-code`, you will need to submit three *python* files for the three assignment questions: `contour_solve.py`, `corner_solve.py`, and `blend_solve.py`.
         - *Not submitting your code will lead to a loss of 100% of assignment points.*
         - *Note:* Do not compress the files into `.zip` as this will not work.
         - Do not change the provided files names nor the names of the functions but rather change the code inside the provided functions and add new functions. Also, make sure that the inputs and outputs of the provided functions are not changed.
@@ -28,7 +28,7 @@
 
 4.  We reserve the right to take off points for not following submission instructions or templates.
 
-5.  You only need to change `corner_solve.py`, `corner_solve.py`, and `blend_solve.py` files, please run `pip install -r requirements.txt` to install required packages. *Also, you are not allowed to use library functions that trivialize the problems. For example, you are not allowed to use functions to compute image pyramids, detect edges, detect corners, non-maximum suppression, hysteresis, etc*.
+5.  You only need to change `contour_solve.py`, `corner_solve.py`, and `blend_solve.py` files, please run `pip install -r requirements.txt` to install required packages. *Also, you are not allowed to use library functions that trivialize the problems. For example, you are not allowed to use functions to compute image pyramids, detect edges, detect corners, non-maximum suppression, hysteresis, etc*.
 
 6.  Lastly, be careful not to work of a public fork of this repo. Make a private clone to work on your assignment. You are responsible for preventing other students from copying your work. Please also see point 2 above.
 
