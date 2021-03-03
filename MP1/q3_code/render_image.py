@@ -38,8 +38,8 @@ def main():
     # - Z (depth image: distance to scene point from camera center, along the
     # Z-axis)
     # - N is the per pixel surface normals (N[:,:,0] component along X-axis
-    # (pointing right), N[:,:,1] component along X-axis (pointing down),
-    # N[:,:,0] component along X-axis (pointing into the scene)),
+    # (pointing right), N[:,:,1] component along Y-axis (pointing down),
+    # N[:,:,2] component along Z-axis (pointing into the scene)),
     # - A is the per pixel ambient and diffuse reflection coefficient per pixel,
     # - S is the per pixel specular reflection coefficient.
     Z, N, A, S = get_ball(specular=specular)

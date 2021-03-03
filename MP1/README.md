@@ -50,6 +50,15 @@
 5.  We provide some starter code for this assignment. Please run `pip install
     -r requirements.txt` to install required packages.
 
+### Change log
+* v3 02/18/2021 Fix `q3_code/render_image.py` comments on coordinate directions.
+
+* v2 02/16/2021 Add missing $`\max`$ with $`0`$ for specular term in Q3 $`I(x)`$ equation.
+
+* v1 02/15/2021 Add missing $`+`$ sign in Q3 $`I(x)`$ equation.
+
+* v0 02/10/2021 Creation.
+
 ### Problems
 
 1. **Vanishing Points and Vanishing Lines [5 pts].** Consider a plane
@@ -92,7 +101,7 @@
     
     ```math
     I(x) = \text{Ambient Term} + \text{Diffuse Term} + \text{Specular Term} \\
-    I(x) = k_a L_a + k_d \sum_i L_i [\hat{v}_i \cdot \hat{n}]^{+} k_s \sum_i L_i (\hat{v}_r \cdot \hat{s}_i)^{k_e}.
+    I(x) = k_a L_a + k_d \sum_i L_i [\hat{v}_i \cdot \hat{n}]^{+} + k_s \sum_i L_i ([\hat{v}_r \cdot \hat{s}_i]^{+})^{k_e}.
     ```
 
     Here,
