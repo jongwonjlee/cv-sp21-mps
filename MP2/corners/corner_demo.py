@@ -54,9 +54,8 @@ def load_pred(output_dir, imname):
 def vis(fn, imname, output_dir):
   I = cv2.imread(os.path.join('data', 'vis', str(imname)+'.png'))
   response, corners = fn(I)
-  pdb.set_trace()
   cv2_corners = np.where(corners >= FLAGS.vis_thresh)
-  cv2_corners = [cv2.KeyPoint(c[1], c[0], 1) for c in np.stack(cv2_corners).T]
+  cv2_corners = [cv2.KeyPoint(float(c[1]), float(c[0]), 1.0) for c in np.stack(cv2_corners).T]
 
   # Visualize the returned response map and corners
   I_corners = cv2.drawKeypoints(I, cv2_corners, None, color=(0, 255, 0))
