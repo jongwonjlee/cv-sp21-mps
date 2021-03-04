@@ -2,6 +2,8 @@
 git_usage.md
 /*.png
 /*.pdf
+output/
+*.png
 
 # jupyter notebook
 *.ipynb

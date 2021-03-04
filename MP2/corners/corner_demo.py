@@ -10,8 +10,8 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from corner_eval import compute_pr
 from corner_plot import display_results
-# from corner_solve import compute_corners
-from corner_solution_cv2 import compute_corners
+from corner_solve import compute_corners
+# from corner_solution_cv2 import compute_corners
 import pdb
 
 FLAGS = flags.FLAGS
@@ -55,8 +55,8 @@ def load_pred(output_dir, imname):
 def vis(fn, imname, output_dir):
   I = cv2.imread(os.path.join('data', 'vis', str(imname)+'.png'))
   response, corners = fn(I)
-  pdb.set_trace()
   cv2_corners = np.where(corners >= FLAGS.vis_thresh)
+  # pdb.set_trace()
   cv2_corners = [cv2.KeyPoint(c[1], c[0], 1) for c in np.stack(cv2_corners).T]
 
   # Visualize the returned response map and corners
