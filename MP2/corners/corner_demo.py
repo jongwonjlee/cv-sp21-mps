@@ -10,8 +10,7 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from corner_eval import compute_pr
 from corner_plot import display_results
-# from corner_solve import compute_corners
-from corner_solution_cv2 import compute_corners
+from corner_solve import compute_corners
 import pdb
 
 FLAGS = flags.FLAGS
