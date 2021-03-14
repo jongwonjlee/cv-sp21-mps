@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import signal, ndimage
 import cv2
-from math import floor
+from math import floor, ceil
 
 def compute_edges_dxdy(I):
   """Returns the norm of dx and dy as the edge response function."""
@@ -33,38 +33,35 @@ def compute_edges_dxdy(I):
   return mag
 
 
-def non_max_suppression_original(img, D):
-  M, N = img.shape
+def non_max_suppression_original(mag, D):
+  M, N = mag.shape
   Z = np.zeros((M,N), dtype=np.int32)
   angle = D * 180. / np.pi
   angle[angle < 0] += 180
 
-  for i in range(1,M-1):
-    for j in range(1,N-1):
-      q = 255
-      r = 255
-      
+  for h in range(1,M-1):
+    for w in range(1,N-1):
       #angle 0
-      if (0 <= angle[i,j] < 22.5) or (157.5 <= angle[i,j] <= 180):
-        q = img[i, j+1]
-        r = img[i, j-1]
+      if (0 <= angle[h,w] < 22.5) or (157.5 <= angle[h,w] <= 180):
+        p = mag[h, w+1]
+        r = mag[h, w-1]
       #angle 45
-      elif (22.5 <= angle[i,j] < 67.5):
-        q = img[i+1, j-1]
-        r = img[i-1, j+1]
+      elif (22.5 <= angle[h,w] < 67.5):
+        p = mag[h+1, w-1]
+        r = mag[h-1, w+1]
       #angle 90
-      elif (67.5 <= angle[i,j] < 112.5):
-        q = img[i+1, j]
-        r = img[i-1, j]
+      elif (67.5 <= angle[h,w] < 112.5):
+        p = mag[h+1, w]
+        r = mag[h-1, w]
       #angle 135
-      elif (112.5 <= angle[i,j] < 157.5):
-        q = img[i-1, j-1]
-        r = img[i+1, j+1]
-
-      if (img[i,j] >= q) and (img[i,j] >= r):
-        Z[i,j] = img[i,j]
+      elif (112.5 <= angle[h,w] < 157.5):
+        p = mag[h-1, w-1]
+        r = mag[h+1, w+1]
+      
+      if max(mag[h,w], p, r) == mag[h,w]:
+        Z[h,w] = mag[h,w]
       else:
-        Z[i,j] = 0
+        Z[h,w] = 0
 
   return Z
 
@@ -77,24 +74,38 @@ def non_max_suppression(mag, D):
     for w in range(1,W-1):
         angle = D[h,w]
         if 1/4 * np.pi < abs(angle) < 3/4 * np.pi: # project to horizontal axis
-          # case 1: positive direction of gradient
+          # case 1
           k = 1 / np.tan(angle)
-          p = (floor(k)-k+1) * mag[h+floor(k),w+floor(k)] + (k-floor(k)) * mag[h+floor(k),w+floor(k)+1]
-          # case 2: negative direction of gradient
+          x = w + k
+          y = h + 1 if angle > 0 else h - 1
+          p = (ceil(x) - x) * mag[y, floor(x)] + (x - floor(x)) * mag[y, ceil(x)]
+          # case 2
           k = - 1 / np.tan(angle)
-          r = (floor(k)-k+1) * mag[h+floor(k),w+floor(k)] + (k-floor(k)) * mag[h+floor(k),w+floor(k)+1]
+          x = w - k
+          y = h - 1 if angle > 0 else h + 1
+          r = (ceil(x) - x) * mag[y, floor(x)] + (x - floor(x)) * mag[y, ceil(x)]
         else: # project to vertical axis
-          # case 1: positive direction of gradient
+          # case 1
           k = np.tan(angle)
-          p = (floor(k)-k+1) * mag[h+floor(k),w+floor(k)] + (k-floor(k)) * mag[h+floor(k)+1,w+floor(k)]
-          # case 2: negative direction of gradient
+          x = w + 1 if angle > 0 else w - 1
+          y = h + k
+          p = (ceil(y) - y) * mag[floor(y), x] + (y - floor(y)) * mag[ceil(y), x]
+          # case 2
           k = - np.tan(angle)
-          r = (floor(k)-k+1) * mag[h+floor(k),w+floor(k)] + (k-floor(k)) * mag[h+floor(k)+1,w+floor(k)]
+          x = w - 1 if angle > 0 else w + 1
+          y = h - k
+          r = (ceil(y) - y) * mag[floor(y), x] + (y - floor(y)) * mag[ceil(y), x]
         
-
         if max(mag[h,w], p, r) == mag[h,w]:
           Z[h,w] = mag[h,w]
         else:
           Z[h,w] = 0
         
   return Z
+
+if __name__ == "__main__":
+    filename = '227092'
+
+    I = cv2.imread(f'{filename}.jpg')
+    edge = compute_edges_dxdy(I)
+    cv2.imwrite(f'{filename}-mine.png', edge)
