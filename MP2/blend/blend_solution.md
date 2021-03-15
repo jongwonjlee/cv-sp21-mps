@@ -107,13 +107,24 @@
 
 2. **Oraple.**
 
-    Below shows the outcome of introduced pyramid blending algorithm. It merges the first image [apple.jpeg](apple.jpeg) and the second image [orange.jpeg](orange.jpeg) with a mask [mask.png](mask.png), whose nonzero pixels weighs for the first and zeros for the second. The rightmost image represents the outcome, and you can see that the blending has been done smoothly without any drastic change near the boundary of [mask.png](mask.png).
+    Below shows the outcome of introduced pyramid blending algorithm. It merges the first image [oraple/apple.jpeg](oraple/apple.jpeg) and the second image [oraple/orange.jpeg](oraple/orange.jpeg) with a mask [oraple/mask.png](oraple/mask.png), whose nonzero pixels weighs for the first and zeros for the second. The rightmost image represents the outcome, and you can see that the blending has been done smoothly without any drastic change near the boundary of [oraple/mask.png](oraple/mask.png).
 
     <div align="center">
-        <img src="apple.jpeg" width="24%" style="margin:0px;">
-        <img src="orange.jpeg" width="24%" style="margin:0px;">
-        <img src="mask.png" width="24%" style="margin:0px;">
-        <img src="oraple.png" width="24%" style="margin:0px;">
+        <img src="oraple/apple.jpeg" width="24%" style="margin:0px;">
+        <img src="oraple/orange.jpeg" width="24%" style="margin:0px;">
+        <img src="oraple/mask.png" width="24%" style="margin:0px;">
+        <img src="oraple/oraple.png" width="24%" style="margin:0px;">
     </div>
 
-3. **Blends of your choice.** *TODO:* Include visualizations of blends of your choice (include both original images and the blended image). Describe any modifications you made on top of what worked for the oraple.
+3. **Blends of your choice.** 
+
+    Below shows the additional result of introduced pyramid blending algorithm on my choice. It merges the first image [dog/dog.jpeg](dog/dog.jpeg) and the second image [dog/campus.jpeg](dog/campus.jpeg) with a mask [dog/mask.png](dog/mask.png), whose nonzero pixels weighs for the first and zeros for the second. The rightmost image represents the outcome, and you can see that the blending has been done smoothly without any drastic change near the boundary of [dog/mask.png](dog/mask.png).
+
+    <div align="center">
+        <img src="dog/dog.jpeg" width="24%" style="margin:0px;">
+        <img src="dog/campus.jpeg" width="24%" style="margin:0px;">
+        <img src="dog/mask.png" width="24%" style="margin:0px;">
+        <img src="dog/result.png" width="24%" style="margin:0px;">
+    </div>
+
+    The most remarkable point is that it successfully weighs non-zero pixels in the mask between 0 and 1, whereas [oraple/mask.png](oraple/mask.png) in the previous section contains only 0 or 1. Since [dog/mask.png](dog/mask.png) includes values ranging from 0 to 1, th result [dog/result.png](dog/result.png) is more smoother than [oraple/oraple.png](oraple/oraple.png), in which more sharper mask has been used.
