@@ -91,6 +91,12 @@
    return kernel
    ```
 
+   For instance, the visualized output of `create_gaussian_kernel(window_size=9, sigma=(9//2)/3)` is as follows:
+
+   <div align="center">
+      <img src="gaussian_filter.png" width="60%">
+   </div>
+
    (3) Constructing `corners` by non-max supression: Unlike `response` is a raw H x W response map in uint8 format, `corners` return a *non-max supressed* H x W response map in uint8 format. Regarding the window size of non-max supression is given as `ws_nonmax` ($ws_{nms}$), computing `corners` can be easily done as follows:
 
    ```
