@@ -11,8 +11,8 @@ from matplotlib import pyplot as plt
 from corner_eval import compute_pr
 from corner_plot import display_results
 from corner_solve import compute_corners
-# from corner_solution_cv2 import compute_corners
-import pdb
+
+from random import sample
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string("output_dir", "output/demo", 
@@ -25,6 +25,12 @@ flags.DEFINE_string("imname", "draw_cube_17",
                     "Image set to use for testing")
 flags.DEFINE_float("vis_thresh", 0.1*255, 
                     "Threshold value for visualization")
+flags.DEFINE_integer("window_size", 5, 
+                    "window_size")
+flags.DEFINE_integer("ws_nonmax", 5, 
+                    "ws_nonmax")
+flags.DEFINE_float("k", 0.04, 
+                    "k")
 
 def get_imlist(imset):
   ls = []
@@ -39,6 +45,7 @@ def detect_corners(imlist, fn, out_dir):
     I = cv2.imread(os.path.join('data', FLAGS.imset, 'images', f'{imname}.png'))
     start_time = time.time()
     response, corners = fn(I)
+    # response, corners = fn(I, window_size=FLAGS.window_size, ws_nonmax=FLAGS.ws_nonmax, alpha=FLAGS.k)
     total_time += time.time() - start_time
     out_file_name = os.path.join(out_dir, str(imname)+'.png')
     cv2.imwrite(out_file_name, corners)
@@ -56,8 +63,7 @@ def vis(fn, imname, output_dir):
   I = cv2.imread(os.path.join('data', 'vis', str(imname)+'.png'))
   response, corners = fn(I)
   cv2_corners = np.where(corners >= FLAGS.vis_thresh)
-  # pdb.set_trace()
-  cv2_corners = [cv2.KeyPoint(float(c[1]), float(c[0]), 1) for c in np.stack(cv2_corners).T]
+  cv2_corners = [cv2.KeyPoint(float(c[1]), float(c[0]), 1.0) for c in np.stack(cv2_corners).T]
 
   # Visualize the returned response map and corners
   I_corners = cv2.drawKeypoints(I, cv2_corners, None, color=(0, 255, 0))
@@ -93,6 +99,8 @@ def main(_):
   if FLAGS.mode == 'benchmark':
     imset = FLAGS.imset
     imlist = get_imlist(imset)
+    # imlist = imlist[:5]
+    # imlist = sample(imlist, k=5)
     fn = compute_corners 
   
     bench_dir = os.path.join(output_dir, 'bench')
