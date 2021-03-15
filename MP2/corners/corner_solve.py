@@ -5,7 +5,7 @@ import scipy
 from scipy import ndimage, signal
 
 
-def compute_corners(I, window_size=5, ws_nonmax=3, alpha=0.04):
+def compute_corners(I, window_size=5, ws_nonmax=7, alpha=0.06):
   """
     Harris corner detector which returns corner response map and non-max suppressed corners.
   Input:
@@ -70,6 +70,7 @@ def compute_corners(I, window_size=5, ws_nonmax=3, alpha=0.04):
       corners[h,w] = response[h,w] if window.max() == response[h,w] else 0
 
   return response, corners
+
 
 def create_gaussian_kernel(window_size, sigma):
   """

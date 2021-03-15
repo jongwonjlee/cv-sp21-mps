@@ -21,16 +21,16 @@ flags.DEFINE_enum("mode", "benchmark", ["benchmark", "vis"],
                   "Whether to visualize output on a single image, or benchmark on an image set")
 flags.DEFINE_string("imset", "val", 
                     "Image set to use for testing")
-flags.DEFINE_string("imname", "draw_cube_17", 
+flags.DEFINE_string("imname", "5904776", 
                     "Image set to use for testing")
 flags.DEFINE_float("vis_thresh", 0.1*255, 
-                    "Threshold value for visualization")
+                   "Threshold value for visualization")
 flags.DEFINE_integer("window_size", 5, 
-                    "window_size")
+                     "window_size")
 flags.DEFINE_integer("ws_nonmax", 5, 
-                    "ws_nonmax")
+                     "ws_nonmax")
 flags.DEFINE_float("k", 0.04, 
-                    "k")
+                   "k")
 
 def get_imlist(imset):
   ls = []
@@ -44,8 +44,8 @@ def detect_corners(imlist, fn, out_dir):
   for imname in tqdm(imlist):
     I = cv2.imread(os.path.join('data', FLAGS.imset, 'images', f'{imname}.png'))
     start_time = time.time()
-    response, corners = fn(I)
-    # response, corners = fn(I, window_size=FLAGS.window_size, ws_nonmax=FLAGS.ws_nonmax, alpha=FLAGS.k)
+    # response, corners = fn(I)
+    response, corners = fn(I, window_size=FLAGS.window_size, ws_nonmax=FLAGS.ws_nonmax, alpha=FLAGS.k)
     total_time += time.time() - start_time
     out_file_name = os.path.join(out_dir, str(imname)+'.png')
     cv2.imwrite(out_file_name, corners)
