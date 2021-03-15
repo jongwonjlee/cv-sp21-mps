@@ -14,28 +14,31 @@ def compute_corners(I, window_size=5, ws_nonmax=7, alpha=0.06):
     ws_nonmax : window size for nonmax suppression
     alpha : hyperparameter for R = det(M) - alpha * tr(M) ** 2
   Output:
-    response: H w W response map in uint8 format
-    corners: H w W map in uint8 format _after_ non-max suppression. Each
+    response : H w W response map in uint8 format
+    corners : H w W map in uint8 format _after_ non-max suppression. Each
     pixel stores the score for being a corner. Non-max suppressed pixels
     should have a low / zero-score.
   """
+
   I = cv2.cvtColor(I, cv2.COLOR_BGR2GRAY)
   H = I.shape[0]
   W = I.shape[1]
 
-  response = np.zeros((H,W))
-  corners  = np.zeros((H,W))
-
+  # Declare variables to be returned
+  response = np.zeros(I.shape)
+  corners  = np.zeros(I.shape)
+  
+  # Create image gradient
   dx = signal.convolve2d(I, np.array([[-1, 0, 1]]), mode='same', boundary='symm')
   dy = signal.convolve2d(I, np.array([[-1, 0, 1]]).T, mode='same', boundary='symm')
   Ixx = dx**2
   Ixy = dx*dy
   Iyy = dy**2
 
-  # Generate guassian kernel
+  # Generate guassian filter with the size of `window_size`, whose standard deviation is one third of `window_size // 2`
   w_gaussian = create_gaussian_kernel(window_size, (window_size // 2) / 3)
   
-  # Find corner candidates
+  # Find corner response over all pixels
   offset = window_size // 2
   for h in range(offset, H-offset):
     for w in range(offset, W-offset):
@@ -57,17 +60,31 @@ def compute_corners(I, window_size=5, ws_nonmax=7, alpha=0.06):
       R = np.linalg.det(M) - alpha * (np.trace(M) ** 2)
       response[h,w] = R
 
-  # Clip response
+  # Clip the response to avoid edge or flat region
   _, response = cv2.threshold(response, 0.001*response.max(), np.inf, cv2.THRESH_TOZERO)
   response = (response - response.min()) / (response.max() - response.min()) * 255.
   response = response.astype(np.uint8)
 
-  # Do non-max suppression
+  # Do non-max suppression with a window size of `ws_nonmax`
   offset = ws_nonmax // 2
   for h in range(offset, H-offset):
     for w in range(offset, W-offset):
       window = response[h-offset:h+offset+1, w-offset:w+offset+1]
       corners[h,w] = response[h,w] if window.max() == response[h,w] else 0
+  
+  """
+  # in-built harris corner detection
+  response = cv2.cornerHarris(I, window_size, window_size, alpha)
+  _, response = cv2.threshold(response, 0.001*response.max(), np.inf, cv2.THRESH_TOZERO)
+  response = (response - response.min()) / (response.max() - response.min()) * 255.
+  response = response.astype(np.uint8)
+
+  offset = ws_nonmax // 2
+  for h in range(offset, H-offset):
+    for w in range(offset, W-offset):
+      window = response[h-offset:h+offset+1, w-offset:w+offset+1]
+      corners[h,w] = response[h,w] if window.max() == response[h,w] else 0
+  """
 
   return response, corners
 
@@ -76,10 +93,10 @@ def create_gaussian_kernel(window_size, sigma):
   """
   Create 2D gaussian kernel with the size of `window_size` and standard deviation of `sigma`
   Input:
-    window_size: kernel size to be created
-    sigma: standard deviation of gaussian kernel
+    window_size : kernel size to be created
+    sigma : standard deviation of gaussian kernel
   Output:
-    kernel: a 2D gaussian kernel which has a standard deviation of `sigma` and the squared size of `window_size`
+    kernel : a 2D gaussian kernel which has a standard deviation of `sigma` and the squared size of `window_size`
   """
   ax = np.linspace(-(window_size-1)/2, (window_size-1)/2, window_size)
   xx, yy = np.meshgrid(ax, ax)
@@ -90,7 +107,7 @@ def create_gaussian_kernel(window_size, sigma):
 if __name__ == "__main__":
   np.set_printoptions(precision=2)
 
-  show_mine = False
+  show_mine = True
   img_names = ['draw_cube_17', '37073', '5904776']
   
   for img_name in img_names:
