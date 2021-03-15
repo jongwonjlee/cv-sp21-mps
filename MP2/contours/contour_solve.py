@@ -9,9 +9,9 @@ def compute_edges_dxdy(I):
   I = I.astype(np.float32)/255.
 
   ### part 1
-  dx = signal.convolve2d(I, np.array([[-1, 0, 1]]), mode='same')
-  dy = signal.convolve2d(I, np.array([[-1, 0, 1]]).T, mode='same')
-  mag = np.sqrt(dx**2 + dy**2)
+  # dx = signal.convolve2d(I, np.array([[-1, 0, 1]]), mode='same')
+  # dy = signal.convolve2d(I, np.array([[-1, 0, 1]]).T, mode='same')
+  # mag = np.sqrt(dx**2 + dy**2)
   
   ### part 2
   # dx = signal.convolve2d(I, np.array([[-1, 0, 1]]), mode='same', boundary='symm')
@@ -24,11 +24,11 @@ def compute_edges_dxdy(I):
   # mag = np.sqrt(dx**2 + dy**2)
 
   # part 4
-  # dx = ndimage.gaussian_filter1d(I,   sigma=4., order=1)
-  # dy = ndimage.gaussian_filter1d(I.T, sigma=4., order=1).T
-  # mag = np.sqrt(dx**2 + dy**2)
-  # direction = np.arctan2(dy, dx)
-  # mag = non_max_suppression(mag, direction)
+  dx = ndimage.gaussian_filter1d(I,   sigma=4., order=1)
+  dy = ndimage.gaussian_filter1d(I.T, sigma=4., order=1).T
+  mag = np.sqrt(dx**2 + dy**2)
+  direction = np.arctan2(dy, dx)
+  mag = non_max_suppression(mag, direction)
 
   mag = (mag - np.min(mag)) / (np.max(mag) - np.min(mag))
   mag = mag * 255.
