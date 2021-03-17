@@ -139,7 +139,7 @@
    |   9   | Harris w/ NMS    | $ws_{nms}=5$              | 0.520726 | 1.038278 |
    |   10  | Harris w/ NMS    | $ws_{nms}=7$              | **0.524210** | 0.954629 |
    |   11  | Harris w/ NMS    | $ws_{nms}=9$              | 0.497800 | 1.032269 |
-   |   12  | Test set numbers of best model [From gradescope] | | | |
+   |   12  | Test set numbers of best model [From gradescope] | same as exp. 10. | **0.52421** | **0.53** |
 
 
 4. **Visualizations.** 
@@ -174,14 +174,97 @@
    
    From these outcomes, it can be concluded that the developed corner detection algorithm from scratch shows almost the comparable results with that of ``cv2.cornerHarris`, though it seems like to fail in detecting corners (e.g. lower-right corner of the cube in the first image) or detect non-corners (e.g. cracks on the ground in the second image). These artifact can be lessen by fine-tuning the set of hyperparameters or more elaborated methods, such as multiscale dection, or etc.
 
-5. **Bells and Whistles.** *TODO*: Include details of the bells and whistles that you
-   tried here.
+5. **Bells and Whistles.** 
 
-   *TODO*: Present the performance metrics for the bells and whistles in a table format
+- In this section, I tried to improve the corner detection performance beyond that of Harris' original version. Most of the ideas are inspired by:
+
+   > Bellavia, F., D. Tegolo, and Cf Valenti. "Improving Harris corner selection strategy." IET Computer Vision 5.2 (2011): 87-96.
+
+- The most significant technique exploited here is all determinants and traces for each small window $M$, which is an essential component to be constructed while computing the corner response for each pixel, are zero-mean normalized. It has two significant theoretical advantages compared with the original one. First, the corner response is likely to be stable and invariant globally regardless of what the illunation or texture is as it is normalized from that of flat region, which is dominant in the image. Second, it allows us not to struggle with fine-tuning $\alpha$, a hyperparameter governing the response function's behavior.
+
+   The second idea is the image gradient is weighed by binary mask, which has zeros for pixels below the average magnitude of gradient whereas ones for above it. By doing so, all candidates for non-significant gradient region can be effectively rejected.
+
+- Now, let's look into it more details with code blocks. First, the gradient along two axes and their masked results are computed:
+
+   ```
+   I = cv2.cvtColor(I, cv2.COLOR_BGR2GRAY)
+   H = I.shape[0]
+   W = I.shape[1]
+
+   # Declare variables to be returned
+   response = np.zeros(I.shape)
+   corners  = np.zeros(I.shape)
+
+   # Create image gradient
+   dx = signal.convolve2d(I, np.array([[-1, 0, 1]]), mode='same', boundary='symm')
+   dy = signal.convolve2d(I, np.array([[-1, 0, 1]]).T, mode='same', boundary='symm')
+   Ixx = dx**2
+   Ixy = dx*dy
+   Iyy = dy**2
+
+   # Enhance gradients
+   G = np.sqrt(Ixx + Iyy)
+   mask = np.where(G < G.mean(), 0., 1.)
+
+   Ixx = mask * Ixx
+   Iyy = mask * Iyy
+   ```
+
+   Then, `M_dets` and `M_traces` are constructed over all pixels around a window with  square size of `window_size`. This is an preprocessing step for zero-mean normalization of corresponding determinant and trace for each window:
+
+   ```
+   # Generate guassian filter with the size of `window_size`, whose standard deviation is one third of `window_size // 2`
+   w_gaussian = create_gaussian_kernel(window_size, (window_size // 2) / 3)
+
+   # Find array of patchs over all pixels
+   offset = window_size // 2
+   M_dets = np.full(I.shape, np.nan)
+   M_traces = np.full(I.shape, np.nan)
+   for h in range(offset, H-offset):
+      for w in range(offset, W-offset):
+         window_Ixx = Ixx[h-offset:h+offset+1, w-offset:w+offset+1]
+         window_Ixy = Ixy[h-offset:h+offset+1, w-offset:w+offset+1]
+         window_Iyy = Iyy[h-offset:h+offset+1, w-offset:w+offset+1]
+         
+         window_Ixx = w_gaussian * window_Ixx
+         window_Ixy = w_gaussian * window_Ixy
+         window_Iyy = w_gaussian * window_Iyy
+         
+         sum_xx = window_Ixx.sum()
+         sum_xy = window_Ixy.sum()
+         sum_yy = window_Iyy.sum()
+
+         patch = np.array([[sum_xx, sum_xy],
+                           [sum_xy, sum_yy]])
+         M_dets[h, w] = np.linalg.det(patch)
+         M_traces[h, w] = np.trace(patch)
+   ```
+
+   After then, responses for all pixels are computed. Note that all determinants and traces are normalized and a hyperparameter `alpha` is no longer used in the definition of response function:
+
+   ```
+   # Compute mean and stdv over all data
+   mu_det = np.nanmean(M_dets)
+   std_det = np.nanstd(M_dets)
+   mu_tr = np.nanmean(M_traces)
+   std_tr = np.nanstd(M_traces)
+
+   # Construct response with zero-mean normalization
+   for h in range(offset, H-offset):
+      for w in range(offset, W-offset):
+         response[h,w] = (M_dets[h,w] - mu_det) / std_det - (M_traces[h,w] - mu_tr) / std_tr 
+   ``` 
+
+   The postprocessing steps, clipping and non-max suppression, are identical to the original version. 
+
+- Though this extension makes perfect sense to me theoretically and is supposed to perform better in general cases, the actual results presented on the provided benchmark does not seems like to be superior to the original one. Note that the result with non-max suprresion does not show any supremacy compared with the original version.
 
    | Method | Average Precision | Runtime |
    | ------ | ----------------- | ------- |
-   | Best base Implementation (from above) | | |
-   | Bells and whistle (1) [extra credit]) | | |
-   | Bells and whistle (2) [extra credit]) | | |
-   | Bells and whistle (n) [extra credit]) | | |
+   | Harris w/ NMS ($ws=5, \alpha=0.06, ws_{nms}=7$) |  **0.524210** | 0.954629 |
+   | zero-meaned Harris w/ NMS ($ws=3, ws_{nms}=7$)  | 0.403649 | 1.047272 |
+   | zero-meaned Harris w/ NMS ($ws=5, ws_{nms}=7$)  | 0.359373 | 0.934424 |
+   | zero-meaned Harris w/ NMS ($ws=7, ws_{nms}=7$)  | 0.309713 | 1.079308 |
+
+- That being said, however, we cannot readily deduce that the suggested method in a totally wrong direction as there exist a number of factors not taken into account. For instance, the performance may vary from the dataset on which we evaluate. Otherwise, its optimal hyperparameter might have way different values that I did not investigate. Certainly, it can be a challenging but intriguing topic to be studied.
+
