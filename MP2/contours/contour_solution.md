@@ -142,8 +142,8 @@
    | Smoothing | $\sigma = 3$ | 0.579611 | 0.606990 | 0.547489 | 0.007028 |
    |  | $\sigma = 4$ | 0.603072 | 0.629803 | 0.580837 | 0.008024 |
    |  | $\sigma = 5$ | 0.599326 | 0.627457 | 0.576806 | 0.009129 |
-   | Non-max suppression | $\sigma = 4$ | 0.614312 | 0.638384 | 0.613139 | 3.400985 |
-   | Test set numbers of best model [From gradescope] || |  |  |  |
+   | Non-max suppression | $\sigma = 4$ | **0.614312** | **0.638384** | **0.613139** | **3.400985** |
+   | Test set numbers of best model [From gradescope] | same as above | 0.614312 | 0.638384 | 0.613139 | 2.49 |
 
 4. **Visualizations.**
    
@@ -166,14 +166,28 @@
 
    Though the suggested algorithm is quite effective for detecting coarse contours, it can be observed that it shows slightly unwanted results in the region where fine edges or detailed patterns exist. This is attributed to the fact that non-max suppresion was done pixelwise; it simply suppresses non-maxima by investigating their most adjacent neighborhoods. Therefore, in order to avoid detecting these fine patterns, an additional method that compares each pixel with more larger scale (i.e. in a patch) should be applied.
 
-5. **Bells and Whistles.** *TODO*: Include details of the bells and whistles that you
-   tried here.
+5. **Bells and Whistles.** 
 
-   *TODO*: Present the performance metrics for the bells and whistles in a table format
+- Observing the visualized outcome, one of bells and whistles conceivable is to apply morphological transformation. This is originated from the fact that the estimated contour image contains unwanted fine features, which are not supposed to be detected. Applying errosion followed by dilation effectively is likely to effectively remove them while preserving coarse edges. The actual implementation is quite simple; the only thing to be done is just to append this operation right after the non-max suppression:
+
+   ```
+   kernel = np.ones((1,1), np.uint8)
+   mag = cv2.morphologyEx(mag, cv2.MORPH_OPEN, kernel)
+   ``` 
+
+- Another strategy which has been tried was to make a slight modification on the clipping operation just before return the estimated edges. It avoids including 'weak' candidates as edge pixels.
+
+   ```
+   _, mag = cv2.threshold(mag, 0.05*mag.max(), np.inf, cv2.THRESH_TOZERO)
+   mag = (mag - np.min(mag)) / (np.max(mag) - np.min(mag)) * 255.
+   mag = mag.astype(np.uint8)
+   ```
+
+- However, the results did not exceed the original version's performance. 
    
    | Method | overall max F-score | average max F-score | AP | Runtime (seconds) |
    | ----------- | --- | --- | ---  | --- |
-   | Best base Implementation (from above) | | | | 
-   | Bells and whistle (1) [extra credit]) | | | | 
-   | Bells and whistle (2) [extra credit]) | | | |
-   | Bells and whistle (n) [extra credit]) | | | |
+   | $smoothing w/ \sigma = 4$ + NMS (baseline) | 0.614312 | 0.638384 | 0.613139 | 
+   | $smoothing w/ \sigma = 4$ + NMS + Morph. | 0.611340 | 0.635324 | 0.607844 |
+
+- That being said, however, we cannot readily deduce that the suggested method in a totally wrong direction as there exist a number of factors not taken into account. For instance, the performance may vary from the dataset on which we evaluate. If time and effort allows, I may be able to try out more various modifications that I can imagine, such as referring to multi-scale results to return the most reliable edges, or etc.
