@@ -12,8 +12,6 @@ from corner_eval import compute_pr
 from corner_plot import display_results
 from corner_solve import compute_corners
 
-from random import sample
-
 FLAGS = flags.FLAGS
 flags.DEFINE_string("output_dir", "output/demo", 
                     "Directory to save results in.")
