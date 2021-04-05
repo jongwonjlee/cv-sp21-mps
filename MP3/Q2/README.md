@@ -131,7 +131,9 @@ fig, ax = plt.subplots()
 plot_fundamental(ax, F.T, pt2_2d, pt1_2d, I1)
 ```
 
-By running above, the outcomes for both unnormalized and normalized eight-point algorithms are visualized as well as quantitative errors. As expected, normalized case demonstrates slightly improved performance.
+By running above, the outcomes for both unnormalized and normalized eight-point algorithms are visualized as well as quantitative errors. As expected, normalized case demonstrates slightly improved performance. To be specific, the residual error has been decreased by the order of maginitude.
+
+#### Case 1: library
 
 ```
 library: residual in frame 2 (non-normalized method) =  0.17921336680315691
@@ -144,7 +146,6 @@ library: residual combined   (non-normalized method) =  0.16416823309543266
   <img src="./library1_unnormalized.jpg" width="30%">
 </div>
 
-
 ```
 library: residual in frame 2 (normalized method) =  0.06033445847957677
 library: residual in frame 1 (normalized method) =  0.05484509861965621
@@ -154,6 +155,30 @@ library: residual combined   (normalized method) =  0.057589778549616485
 <div align="center">
   <img src="./library2_normalized.jpg" width="30%">
   <img src="./library1_normalized.jpg" width="30%">
+</div>
+
+#### Case 2: lab
+
+```
+lab: residual in frame 2 (non-normalized method) =  6.567091502185167
+lab: residual in frame 1 (non-normalized method) =  9.76065542496813
+lab: residual combined   (non-normalized method) =  8.163873463576648
+```
+
+<div align="center">
+  <img src="./lab2_unnormalized.jpg" width="30%">
+  <img src="./lab1_unnormalized.jpg" width="30%">
+</div>
+
+```
+lab: residual in frame 2 (normalized method) =  0.5497313255920988
+lab: residual in frame 1 (normalized method) =  0.5833496860083314
+lab: residual combined   (normalized method) =  0.5665405058002151
+```
+
+<div align="center">
+  <img src="./lab2_normalized.jpg" width="30%">
+  <img src="./lab1_normalized.jpg" width="30%">
 </div>
 
 
@@ -351,3 +376,118 @@ Mean 3D reconstuction error for the lab data:  0.01332
 
 
 ## **Extra Credits [5 pts].**
+
+In this section, I used my own putative match generation and RANSAC code from the last question to estimate fundamental matrices without  ground-truth matches. Once matches are found, the fundamental matrix was estimated by the normalized method.
+
+### Implementation
+
+All functions pertaining to finding putative matches and refining them by RANSAC were imported to facilitate the overall implementation. After then, the following scripts were executed to accomplish fundamental matrix estimation without ground-truth matches.
+
+In RANSAC, the number of iterations (`num_iteration`) and threshold for reprojection (`threshold`) were set to be 100 and 10, respectively.
+
+```
+# Fundamental matrix estimation
+name = 'library' 
+# You also need to report results for name = 'lab'
+# name = 'lab'
+
+I1 = imread('./{:s}1.jpg'.format(name))
+I2 = imread('./{:s}2.jpg'.format(name))
+
+# matches between img1 and img2
+matches_raw = get_best_matches(I1, I2, 300)
+H, matches, residuals = ransac(matches_raw, num_iteration=100, threshold=10)
+print(f"Average residual: {np.average(residuals):.2f}")
+print(f"Inlier ratio: {len(matches) / len(matches_raw):.2f}")
+
+N = len(matches);
+
+## Display two images side-by-side with matches
+## this code is to help you visualize the matches, you don't need
+## to use it to produce the results for the assignment
+I3 = np.zeros((I1.shape[0],I1.shape[1]*2,3))
+I3[:,:I1.shape[1],:] = I1;
+I3[:,I1.shape[1]:,:] = I2;
+fig, ax = plt.subplots()
+ax.set_aspect('equal')
+ax.plot(matches[:,0],matches[:,1],  '+r')
+ax.plot( matches[:,2]+I1.shape[1],matches[:,3], '+r')
+ax.plot([matches[:,0], matches[:,2]+I1.shape[1]],[matches[:,1], matches[:,3]], 'r')
+ax.imshow(np.array(I3).astype(np.uint8))
+plt.savefig('./{:s}_matches_ransac.jpg'.format(name))
+
+# normalized method
+pt1_2d = matches[:, :2]
+pt2_2d = matches[:, 2:]
+
+F = fit_fundamental_normalized(pt1_2d, pt2_2d) # <YOUR CODE>
+v2 = get_residual(F, pt1_2d, pt2_2d)
+v1 = get_residual(F.T, pt2_2d, pt1_2d)
+print('{:s}: residual in frame 2 (from RANSAC, normalized method) = '.format(name), v2)
+print('{:s}: residual in frame 1 (from RANSAC, normalized method) = '.format(name), v1)
+print('{:s}: residual combined   (from RANSAC, normalized method) = '.format(name), (v1+v2)/2)
+# Plot epipolar lines in image I2
+fig, ax = plt.subplots()
+plot_fundamental(ax, F, pt1_2d, pt2_2d, I2)
+plt.savefig('./{:s}2_normalized_ransac.jpg'.format(name))
+# Plot epipolar lines in image I1
+fig, ax = plt.subplots()
+plot_fundamental(ax, F.T, pt2_2d, pt1_2d, I1)
+plt.savefig('./{:s}1_normalized_ransac.jpg'.format(name))
+```
+
+### Results
+
+Below shows both the qualitative and quantitative outcomes from the above.
+
+#### Case 1: library
+
+For `library` image pair, a set of feature pairs were successfully obtained. Both the average residual and ratio for inlier features were in a reasonable range as well.
+
+```
+Average residual: 4.85
+Inlier ratio: 0.36
+```
+
+<div align="center">
+  <img src="./library_matches_ransac.jpg" width="60%">
+</div>
+
+Residuals after estimating the fundamental matrix with the normalized method were evaluated as below. Considering that the results from ground-truth match pairs were smaller than the second order of magnitude, we can conclude that the performance has been deteriorated from the original implementation.
+
+```
+library: residual in frame 2 (from RANSAC, normalized method) =  7.055730847114654
+library: residual in frame 1 (from RANSAC, normalized method) =  8.335586725526515
+library: residual combined   (from RANSAC, normalized method) =  7.695658786320584
+```
+
+<div align="center">
+  <img src="./library2_normalized_ransac.jpg" width="30%">
+  <img src="./library1_normalized_ransac.jpg" width="30%">
+</div>
+
+#### Case 2: lab
+
+On the other hand, however, the developed algorithm does not work for `lab` image pair. I tried to fine-tune the hyperparameters for RANSAC but it did not pay off. This may be attributed to the fact that the features in `lab` image pair detected by SIFT is not distinguished by one another due to several causes, such as repetitive patterns, textureless regions dominating the images, or etc.
+
+```
+Average residual: 2.60
+Inlier ratio: 0.08
+```
+
+<div align="center">
+  <img src="./lab_matches_ransac.jpg" width="60%">
+</div>
+
+As can be seen in the visualized results, indeed, it does fail to estimate fundamental matrix by the normalized method. This is trivial as finding the pairs of feature matches was not successful in the previous step.
+
+```
+lab: residual in frame 2 (from RANSAC, normalized method) =  1.9225486893322323e-25
+lab: residual in frame 1 (from RANSAC, normalized method) =  nan
+lab: residual combined   (from RANSAC, normalized method) =  nan
+```
+
+<div align="center">
+  <img src="./lab2_normalized_ransac.jpg" width="30%">
+  <img src="./lab1_normalized_ransac.jpg" width="30%">
+</div>

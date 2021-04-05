@@ -306,3 +306,50 @@ fig.savefig('stitched_images.jpg', bbox_inches='tight')
 
 
 ## **Extra Credit [5 pts].**
+
+For extra credits, I extended my homography estimation onto multiple images, as provided in [Q1/extra_credits](Q1/extra_credits).
+
+### Implementation
+
+- As image size has been increased, hyperparamters for RANSAC algorithm should be adjusted. To be specific, the number of the iteration (`num_iteration`) and the threshold for reprojection error (`thres`) had to be tuned to be 100 and 10, respectively. Empirically, these values led to achieve reasonable inlier ratio and their average residual.
+- In the function `warp_images`, the second image (`img2`) is warped onto the canvas of the first (`img1`) and stitched by the inverse of given homography (`H`). However, if the images are stitched from left to right sequentailly for the task of stitching three images, this result in a significant problem that the rightmost image become diminished. To avoid this issue, I stitched the center (`img2`) and the right (`img3`) at first then merged the resulting image (`tmp`) onto the left (`img1`) so that a reasonable outcome can be obtained.
+
+
+```
+### extra credit
+
+opt_num = 3 # choose among 1, 2, and 3
+opt_dict = {1: 'opt_01/park', 2: 'opt_02/state_farm', 3: 'opt_03/hessel'}
+
+img1 = imread(f'./extra_credits/{opt_dict[opt_num]}_left.jpg')
+img2 = imread(f'./extra_credits/{opt_dict[opt_num]}_center.jpg')
+img3 = imread(f'./extra_credits/{opt_dict[opt_num]}_right.jpg')
+
+# matches between img1 and img2
+matches_left = get_best_matches(img1, img2, 300)
+H_left, inliers_left, inlier_residuals_left = ransac(matches_left, num_iteration=100, threshold=10)
+print(f"Average residual: {np.average(inlier_residuals_left):.2f}")
+print(f"Inlier ratio: {len(inliers_left) / len(matches_left):.2f}")
+
+# matches between img2 and img3
+matches_right = get_best_matches(img2, img3, 300)
+H_right, inliers_right, inlier_residuals_right = ransac(matches_right, num_iteration=100, threshold=10)
+print(f"Average residual: {np.average(inlier_residuals_right):.2f}")
+print(f"Inlier ratio: {len(inliers_right) / len(matches_right):.2f}")
+
+# stitch img2 and img3 first, then merge it with img1
+fig, ax = plt.subplots(figsize=(30,10))
+tmp = warp_images(ax, img2, img3, H_right)
+res = warp_images(ax, img1, tmp, H_left)
+fig.savefig(f'./extra_credits/{opt_dict[opt_num]}_stitched.jpg', bbox_inches='tight')
+```
+
+### Results
+
+It can be seen that we are capable of obtaining an consistent and reasonable stitched image based on the estimated homography.
+
+<div align="center">
+<img src="./extra_credits/opt_01/park_stitched.jpg" width="100%">
+<img src="./extra_credits/opt_02/state_farm_stitched.jpg" width="100%">
+<img src="./extra_credits/opt_03/hessel_stitched.jpg" width="100%">
+</div>
