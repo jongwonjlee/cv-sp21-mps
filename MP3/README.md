@@ -184,7 +184,7 @@
 
     1.  **Vanishing Points [5 pts].** Estimate the three major orthogonal 
         vanishing points. Assume that the vertical vanishing point is for the 
-        Y-direction, the horizontal vanishing point to the left is the 
+        Y-direction, the vanishing point to the back of the ECE building is the 
         Z-direction, and the horizontal vanishing point to the right is the 
         X-direction. Starter code provides an interface to mark out lines. Mark
         at least 3 lines in each orthogonal direction. We also provide data for 
