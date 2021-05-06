@@ -193,3 +193,6 @@ It could be observed that ImprovedNet-V2, a model with intermediate depth, showe
 
 ## 3. **Secret test set [5 pts].**
 
+I uploaded the results obtained from aforementioned ImprovedNet-V2 model and the results are:
+
+TODO: ADD ACCURACY OBTAINED FROM GRADESCOPE
