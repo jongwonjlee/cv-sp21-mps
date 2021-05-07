@@ -195,4 +195,17 @@ It could be observed that ImprovedNet-V2, a model with intermediate depth, showe
 
 I uploaded the results obtained from aforementioned ImprovedNet-V2 model and the results are:
 
-TODO: ADD ACCURACY OBTAINED FROM GRADESCOPE
+```
+Q1 evaluation results:
+Accuracy: 74.6 %
+Accuracy of airplane : 65.0 %
+Accuracy of automobile : 74.0 %
+Accuracy of  bird : 66.5 %
+Accuracy of   cat : 60.0 %
+Accuracy of  deer : 80.0 %
+Accuracy of   dog : 73.0 %
+Accuracy of  frog : 84.5 %
+Accuracy of horse : 81.0 %
+Accuracy of  ship : 77.0 %
+Accuracy of truck : 85.0 %
+```

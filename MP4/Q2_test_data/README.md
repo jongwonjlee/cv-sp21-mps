@@ -396,19 +396,23 @@ MyModel(
 )
 ```
 
-TODO: FILL IN VALIDATION ACCURACY
-
 Details on the training hyperparameters are as follow:
 
 ```
+learning rate: 1e-3
+optimizer: SGD (momentum: 0.9, weight decay: 0.01)
+scheduler: plateau reducing scheduler (patience: 5)
+batch size: 1
+number of epochs: 200 (early stopping on, patience: 10)
+validation period: 5 epochs / validation
+loss function: L1 loss
 ```
-
 
 The final performance on validation set is reported as below:
 
 | model  | mean error [deg]   | median error [deg]  | acc @ 11.25 [%] | acc @ 22.5 [%] | acc @ 30 [%] | 
 | ------ | ------------------ | ------------------- | --------------- | -------------- | ------------ | 
-| none   |  |  |  |  |  |
+| none   | 32.7 | 26.3 | 23.2 | 44.3 | 55.1 |
 
 
 ## 3. **Increase your model output resolution [15 pts]:**
@@ -826,29 +830,66 @@ MyModel(
 )
 ```
 
-TODO: FILL IN VALIDATION ACCURACY
-
-
 Details on the training hyperparameters are as follow:
 
 ```
+learning rate: 1e-3
+optimizer: SGD (momentum: 0.9, weight decay: 0.01)
+scheduler: plateau reducing scheduler (patience: 5)
+batch size: 1
+number of epochs: 200 (early stopping on, patience: 10)
+validation period: 5 epochs / validation
+loss function: L1 loss
 ```
 
-Here, I provide an ablation table across various DNN architecture, loss function, scheduler, or etc.
+The final performance on validation set is reported as below:
 
 | model  | mean error [deg]   | median error [deg]  | acc @ 11.25 [%] | acc @ 22.5 [%] | acc @ 30 [%] | 
 | ------ | ------------------ | ------------------- | --------------- | -------------- | ------------ | 
-| none   |  |  |  |  |  |
-| basic  |  |  |  |  |  |
-| unet   |  |  |  |  |  |
+| UNet   | 33.3 | 25.2 | 22.9 | 46.1 | 56.3 |
 
+### Ablation Study
+
+Here, I provide an ablation table across three different DNN architecture. 
+
+| model       | mean error [deg]   | median error [deg]  | acc @ 11.25 [%] | acc @ 22.5 [%] | acc @ 30 [%] | 
+| ----------- | ------------------ | ------------------- | --------------- | -------------- | ------------ | 
+| Upsampling      | 32.7 | 26.3 | 23.2 | 44.3 | 55.1 |
+| Encoder-Decoder | 33.6 | 24.8 | 26.0 | 47.1 | 56.2 |
+| UNet            | 33.3 | 25.2 | 22.9 | 46.1 | 56.3 |
+
+- Though the improved architecture (**Encoder-Decoder** and **UNet**) does not outperform the simple architecture (**Upsampling**), its visualization results shows drastic improvement compared to the latter. For details, please refer to the following section.
+- Regarding the comparison between **Encoder-Decoder** and **UNet**, both of them show almost similar performance.
+- The results obtained by using cosine similarity loss are not included as they showed no significant difference to utilizing L1 loss.
 
 ## 4. **Visualize your prediction [5 pts]:**
 
-TODO: FILL IN VISUALIZAED PREDICTION (FIVE; COMPARE THAT OF PART2 AND PART3 AND DISCUSS THE OBSERVATION)
+### Upsampling
+
+![q2_none.png](q2_none.png)
+
+### Encoder-decoder
+
+![q2_basic.png](q2_basic.png)
+
+### UNet
+
+![q2_unet.png](q2_unet.png)
+
+### Discussion
+
+As can be seen above, the results from **Upsampling** shows plausible but imperior visualization output, with a noisy and blurred pattern. This artifact arises from upsampling small-sized outputs (16 x 16) to be a larger size (512 x 512). In contrast, however, the improved architecture (**Encoder-decoder** and **UNet**) demonstrates much concise and finer outputs. From this, we may deduce that the upconvolutional network and skip connection structure are able to obtain estimation output without unwanted information loss.
 
 ## 5. **Secret test set [5 pts].** 
 
 I uploaded the results obtained from aforementioned **UNet** model and the results are:
 
-TODO: ADD ACCURACY OBTAINED FROM GRADESCOPE
+```
+Q2 evaluation results:
+Test metrics:
+mean error 32.7
+median error 23.8
+accuracy at 11.25deg 23.9
+accuracy at 22.5deg 48.0
+accuracy at 30deg 58.2
+```
